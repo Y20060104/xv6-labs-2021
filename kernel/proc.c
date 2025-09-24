@@ -288,6 +288,8 @@ fork(void)
     return -1;
   }
   np->sz = p->sz;
+  
+  np->trace_mask=p->trace_mask;//copy the r=setting of tarce
 
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
@@ -653,4 +655,14 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+int nproc_count(void){
+	struct proc *p;
+	int count=0;
+	for(p=proc;p<&proc[NPROC];p++){
+		if(p->state != UNUSED)
+			count++;
+	}
+	return count;
 }
