@@ -77,8 +77,36 @@ usertrap(void)
     exit(-1);
 
   // give up the CPU if this is a timer interrupt.
-  if(which_dev == 2)
-    yield();
+  if(which_dev == 2){
+    // Timer tick 增加
+    acquire(&tickslock);
+    ticks++;
+    wakeup(&ticks);
+    release(&tickslock);
+
+    // Alarm check
+
+    struct proc *p = myproc();
+    if(p && p->alarm_interval > 0){
+        acquire(&p->lock);
+	if(!p->alarm_on){
+	    p->alarm_ticks--;
+        if(p->alarm_ticks <= 0){
+           
+                // 保存 trapframe
+                p->alarm_tf = *(p->trapframe);
+                // 切换到 handler
+                p->trapframe->epc = (uint64)p->alarm_handler;
+                p->alarm_on = 1;
+            
+            p->alarm_ticks = p->alarm_interval;
+        }
+    }
+release(&p->lock);
+    }
+    yield(); // 可以放在最后
+}
+  
 
   usertrapret();
 }

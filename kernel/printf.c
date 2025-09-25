@@ -126,6 +126,28 @@ panic(char *s)
     ;
 }
 
+
+void
+backtrace(void){
+	uint64 fp=r_fp();
+	uint64 stack_base=PGROUNDDOWN(fp);
+	uint64 stack_top =stack_base+PGSIZE;
+
+	printf("backtrace:\n");
+	
+	while(fp>=stack_base&&fp<stack_top){
+		uint64 ra=*(uint64*)(fp-8);
+		printf("%p\n",ra);
+		uint64 next_fp=*(uint64*)(fp-16);
+		if(next_fp==0||next_fp==fp)
+			break;
+		fp=next_fp;
+	}
+}
+
+
+
+
 void
 printfinit(void)
 {

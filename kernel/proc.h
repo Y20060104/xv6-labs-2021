@@ -91,6 +91,15 @@ struct proc {
   void *chan;                  // If non-zero, sleeping on chan
   int killed;                  // If non-zero, have been killed
   int xstate;                  // Exit status to be returned to parent's wait
+
+
+  int alarm_interval;
+  int alarm_ticks;
+  int alarm_on;
+  uint64 alarm_handler;
+  struct trapframe alarm_tf;
+
+
   int pid;                     // Process ID
 
   // wait_lock must be held when using this:
