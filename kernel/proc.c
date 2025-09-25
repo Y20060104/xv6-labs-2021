@@ -118,6 +118,14 @@ allocproc(void)
 
 found:
   p->pid = allocpid();
+
+  p->usyscall=kalloc();
+  if(p->usyscall==0)
+	  return 0;
+   memset(p->usyscall,0,PGSIZE);
+   struct usyscall *u=(struct usyscall *)p->usyscall;
+   u->pid=p->pid;
+
   p->state = USED;
 
   // Allocate a trapframe page.
@@ -164,6 +172,11 @@ freeproc(struct proc *p)
   p->killed = 0;
   p->xstate = 0;
   p->state = UNUSED;
+  if(p->usyscall){
+	  kfree(p->usyscall);
+	  p->usyscall=0;
+  }
+
 }
 
 // Create a user page table for a given process,
@@ -194,6 +207,15 @@ proc_pagetable(struct proc *p)
     uvmunmap(pagetable, TRAMPOLINE, 1, 0);
     uvmfree(pagetable, 0);
     return 0;
+  }
+
+  if(p->usyscall!=0){
+	  if(mappages(pagetable,USYSCALL,PGSIZE,(uint64)(p->usyscall),PTE_U|PTE_R)!=0){
+			uvmfree(pagetable,0);
+			kfree(p->usyscall);
+			p->usyscall=0;
+			return 0;
+	  }
   }
 
   return pagetable;
