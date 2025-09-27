@@ -1,0 +1,2 @@
+With one thread, the insert() function is correct because no other thread can modify table[b] concurrently.
+With two threads, the operations e->next = table[b] and table[b] = e are not atomic
